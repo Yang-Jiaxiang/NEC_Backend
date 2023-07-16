@@ -32,6 +32,7 @@
         "socket.io": "^4.4.1",
         "swagger-autogen": "^2.21.1",
         "swagger-ui-express": "^4.3.0",
-        "url": "^0.11.0"
+        "url": "^0.11.0",
+        "xml": "^1.0.1"
     }
 }
