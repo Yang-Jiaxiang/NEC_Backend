@@ -46,6 +46,10 @@ router.route('/').get(async (req, res) => {
             },
         ])
 
+        if (originalReport[0].status !== 'finish') {
+            return res.status(400).json({ error: 'Report is not finished.' })
+        }
+
         const report = { ...originalReport[0], records: originalReport[0].report.records.pop() }
 
         switch (contentType) {
@@ -78,17 +82,29 @@ router.route('/').get(async (req, res) => {
         }
     } catch (e) {
         console.log(e)
+        return res.status(500).json({ message: e.message })
     }
 })
 
 function formatReport(item) {
     let formattedReport = ''
+    let summarizeReport = 'summarizeReport：'
+
+    for (let i = 0; i < item.records.summarize.length; i++) {
+        summarizeReport +=
+            item.records.summarize[i].key +
+            ':' +
+            item.records.summarize[i].value +
+            (i === item.records.summarize.length - 1 ? '。' : '、')
+    }
 
     formattedReport += `patientID: ${item.patientID}\n`
     formattedReport += `reportID: ${item._id}\n`
     formattedReport += `accessionNumber: ${item.accessionNumber}\n`
     formattedReport += `StudyInstanceUID: ${item.StudyInstanceUID}\n`
     formattedReport += `birads: ${JSON.stringify(item.records.birads)}\n`
+
+    formattedReport += summarizeReport + '\n'
 
     const responseTxt = ['L', 'R'].map((side) => {
         return item.records.report[side].map((entry, index) => {

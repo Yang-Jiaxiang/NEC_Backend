@@ -16,6 +16,11 @@ router.use('/stats', require('./apis/stats'))
 router.use('/worklist', require('./apis/worklist'))
 router.use('/dicom', require('./apis/dicom'))
 router.use('/pacsSetting', require('./apis/pacsSetting'))
+
+// 透過patientID, accessionNumber, createdAt, contentType取得報告
 router.use('/queryReport', require('./apis/queryReport'))
+
+// 透過patientID 取得病人健保卡資料
+router.use('/nhiOrderXml', require('./apis/nhi_order_xml'))
 
 module.exports = router
