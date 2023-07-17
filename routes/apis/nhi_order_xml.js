@@ -50,6 +50,8 @@ router.route('/').get(async (req, res) => {
                                 { h10: schedule.nhiCard.Birthday },
                                 { h11: schedule.nhiCard.EXAM_DATE },
                                 { h12: schedule.nhiCard.EXAM_DATE },
+                                { h15: schedule.nhiCard.MEDICAL_ORDERS_CODE },
+                                // { h16: schedule.nhiCard.MEDICAL_ORDERS_NAME },
                             ],
                         },
                     ],
