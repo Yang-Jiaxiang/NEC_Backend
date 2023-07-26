@@ -4,6 +4,24 @@ const SCHEDULE = require('../../models/schedule')
 const xml = require('xml')
 const fs = require('fs')
 const path = require('path')
+const axios = require('axios')
+
+const getReportText = async ({ patientID, accessionNumber, accessToken }) => {
+    const url = `http://localhost:${process.env.PORT}/nec/api/queryReport?patientID=${patientID}&accessionNumber=${accessionNumber}&contentType=text`
+
+    try {
+        const result = await axios.get(url, {
+            headers: {
+                Cookie: `accessToken=${accessToken}`,
+            },
+        })
+
+        return result.data
+    } catch (error) {
+        console.error('Error:', error.message)
+        throw error
+    }
+}
 
 router.route('/').get(async (req, res) => {
     try {
@@ -30,9 +48,14 @@ router.route('/').get(async (req, res) => {
 
         const dateNow = new Date().toISOString().slice(0, 10).replace(/-/g, '')
 
-        const results = schedules.map((schedule) => {
+        const results = schedules.map(async (schedule) => {
             const createdAt = schedule.createdAt.toISOString().slice(0, 10).replace(/-/g, '')
             const filePath = `order_nhi_xml/${dateNow}/${schedule.patientID}_${createdAt}_${schedule.accessionNumber}.xml`
+            const reportText = await getReportText({
+                patientID: schedule.patientID,
+                accessionNumber: schedule.accessionNumber,
+                accessToken: req.cookies.accessToken,
+            })
             var example3 = [
                 {
                     patient: [
@@ -42,7 +65,7 @@ router.route('/').get(async (req, res) => {
                                 { h2: schedule.nhiCard.INSTITUTION_CODE },
                                 { h3: schedule.nhiCard.INSTITUTION_TYPE },
                                 { h4: schedule.nhiCard.EXAM_DATE.substr(0, 5) },
-                                { h5: schedule.nhiCard.MEDICAL_DATE },
+                                { h5: schedule.nhiCard.EXAM_DATE },
                                 { h6: schedule.nhiCard.MEDICAL_TYPE },
                                 { h7: schedule.nhiCard.MEDICAL_SEQNO },
                                 { h8: schedule.nhiCard.CARD_REMARK },
@@ -52,6 +75,13 @@ router.route('/').get(async (req, res) => {
                                 { h12: schedule.nhiCard.EXAM_DATE },
                                 { h15: schedule.nhiCard.MEDICAL_ORDERS_CODE },
                                 // { h16: schedule.nhiCard.MEDICAL_ORDERS_NAME },
+                                // { h17: schedule.nhiCard....}
+                                // { h18: ...}
+                                // { h19: ...}
+                                // { h20: ...}
+                                // { h21: ...}
+                                // { h26: ...}
+                                { rdata: [{ r1: '1' }, { r7: reportText.replace(/"/g, '') }] },
                             ],
                         },
                     ],
