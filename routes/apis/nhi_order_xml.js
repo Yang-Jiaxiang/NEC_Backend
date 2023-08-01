@@ -5,23 +5,8 @@ const xml = require('xml')
 const fs = require('fs')
 const path = require('path')
 const axios = require('axios')
-
-const getReportText = async ({ patientID, accessionNumber, accessToken }) => {
-    const url = `http://localhost:${process.env.PORT}/nec/api/queryReport?patientID=${patientID}&accessionNumber=${accessionNumber}&contentType=text`
-
-    try {
-        const result = await axios.get(url, {
-            headers: {
-                Cookie: `accessToken=${accessToken}`,
-            },
-        })
-
-        return result.data
-    } catch (error) {
-        console.error('Error:', error.message)
-        throw error
-    }
-}
+const NHI = require('../../models/nhi')
+const REPORT = require('../../models/report')
 
 router.route('/').get(async (req, res) => {
     try {
@@ -52,9 +37,9 @@ router.route('/').get(async (req, res) => {
             const createdAt = schedule.createdAt.toISOString().slice(0, 10).replace(/-/g, '')
             const filePath = `order_nhi_xml/${dateNow}/${schedule.patientID}_${createdAt}_${schedule.accessionNumber}.xml`
             const reportText = await getReportText({
-                patientID: schedule.patientID,
+                reportID: schedule.reportID,
+                StudyInstanceUID: schedule.StudyInstanceUID,
                 accessionNumber: schedule.accessionNumber,
-                accessToken: req.cookies.accessToken,
             })
             var example3 = [
                 {
@@ -98,13 +83,17 @@ router.route('/').get(async (req, res) => {
                 fs.mkdirSync(directoryPath, { recursive: true })
             }
 
-            fs.writeFile(filePath, xmlData, (err) => {
-                if (err) {
-                    console.error('Error writing XML file:', err)
-                } else {
-                    console.log('XML file has been written successfully.')
-                }
+            const projectBasePath = path.join(path.resolve(__dirname), '../..') + '/'
+
+            const xml_path = await writeXMLFile({ filePath, xmlData })
+
+            let NHIdata = new NHI({
+                schedule_id: schedule._id,
+                xml_path: projectBasePath + xml_path,
+                csv_path: 'aa',
+                called: false,
             })
+            NHIdata = await NHIdata.save()
         })
 
         return res.set('Content-Type', 'text/xml').status(200).send(results)
@@ -112,5 +101,80 @@ router.route('/').get(async (req, res) => {
         return res.status(500).json({ message: e.message })
     }
 })
+
+/**
+ *
+ * @param {*} param0
+ * @returns
+ */
+const getReportText = async ({ reportID, StudyInstanceUID, accessionNumber }) => {
+    const originalReport = await REPORT.findOne({ _id: reportID })
+    const report = {
+        ...originalReport.toObject(),
+        records: originalReport.records.pop(),
+        StudyInstanceUID,
+        accessionNumber,
+    }
+    return formatReport(report)
+}
+
+const writeXMLFile = ({ filePath, xmlData }) => {
+    const customPromise = new Promise((resolve, reject) => {
+        fs.writeFile(filePath, xmlData, (err) => {
+            if (err) {
+                reject(err)
+            } else {
+                resolve(filePath)
+            }
+        })
+    })
+    return customPromise
+}
+
+function formatReport(item) {
+    let formattedReport = ''
+    let summarizeReport = 'summarizeReport：'
+
+    for (let i = 0; i < item.records.summarize.length; i++) {
+        summarizeReport +=
+            item.records.summarize[i].key +
+            ':' +
+            item.records.summarize[i].value +
+            (i === item.records.summarize.length - 1 ? '。' : '、')
+    }
+
+    formattedReport += `patientID: ${item.patientID}\n`
+    formattedReport += `reportID: ${item._id}\n`
+    formattedReport += `accessionNumber: ${item.accessionNumber}\n`
+    formattedReport += `StudyInstanceUID: ${item.StudyInstanceUID}\n`
+    formattedReport += `birads: ${JSON.stringify(item.records.birads)}\n`
+
+    formattedReport += summarizeReport + '\n'
+
+    const responseTxt = ['L', 'R'].map((side) => {
+        return item.records.report[side].map((entry, index) => {
+            return {
+                TumorID: side + (parseInt(index) + 1),
+                clock: entry.clock,
+                distance: entry.distance,
+                size: entry.size,
+                symptom: entry.form.map((symptom) => `${symptom.key}-${symptom.value}`).join('、'),
+            }
+        })
+    })
+
+    const Tumor = [...responseTxt[0], ...responseTxt[1]]
+
+    Tumor.map((Tumor) => {
+        formattedReport += `TumorID: ${Tumor.TumorID}\n`
+        formattedReport += `clock: ${Tumor.clock}\n`
+        formattedReport += `distance: ${Tumor.distance}\n`
+        formattedReport += `size: ${Tumor.size}\n`
+        formattedReport += `symptom: ${Tumor.symptom}\n`
+        formattedReport += '\n'
+    })
+
+    return formattedReport
+}
 
 module.exports = router

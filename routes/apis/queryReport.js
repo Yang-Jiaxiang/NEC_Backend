@@ -51,7 +51,7 @@ router.route('/').get(async (req, res) => {
         }
 
         const report = { ...originalReport[0], records: originalReport[0].report.records.pop() }
-
+        console.log(report)
         switch (contentType) {
             case 'text':
                 const reportText = formatReport(report)
@@ -81,7 +81,6 @@ router.route('/').get(async (req, res) => {
                 return res.status(200).json({ results: report, count })
         }
     } catch (e) {
-        console.log(e)
         return res.status(500).json({ message: e.message })
     }
 })
