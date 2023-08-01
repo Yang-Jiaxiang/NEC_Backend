@@ -18,9 +18,9 @@ router.use('/dicom', require('./apis/dicom'))
 router.use('/pacsSetting', require('./apis/pacsSetting'))
 
 // 透過patientID, accessionNumber, createdAt, contentType取得報告
-router.use('/queryReport', require('./apis/queryReport'))
+router.use('/queryReport', require('../plugins/queryReport/queryReport'))
 
 //匯出 xml
-router.use('/nhiOrderXml', require('./apis/nhi_order_xml'))
+router.use('/nhiOrderXml', require('../plugins/NHIOrder/nhi_order_xml'))
 
 module.exports = router

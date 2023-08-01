@@ -1,5 +1,5 @@
-const loggerSchema = require('../models/logger')
-const { verifyTokenGetUser } = require('../routes/auth')
+const loggerSchema = require('./models/logger')
+const { verifyTokenGetUser } = require('../../routes/auth')
 const logBuffer = [] // 日誌緩衝區
 
 const accessLogStream = () => {

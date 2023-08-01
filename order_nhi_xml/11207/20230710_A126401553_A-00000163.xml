@@ -1,0 +1,13 @@
+<patient><hdata><h1>2</h1><h2>3501203455</h2><h3>11</h3><h4>11207</h4><h5>1120710010210</h5><h6>01</h6><h7>0007</h7><h8>1</h8><h9>A126401553</h9><h10>0750929</h10><h11>1120710010210</h11><h12>1120710010210</h12><h15>28016C</h15><rdata><r1>1</r1><r7>patientID: A126401553
+reportID: 64abafa1d8c5f972950fafb4
+accessionNumber: A-00000163
+StudyInstanceUID: 2.25.133932356245890789339664135135055743450
+birads: {L:1,R:1}
+summarizeReport：EFSP:pain。
+TumorID: R1
+clock: 12
+distance: 0
+size: 1
+symptom: Margin-indistinct
+
+</r7></rdata></hdata></patient>

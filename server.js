@@ -8,7 +8,7 @@ const mongoose = require('mongoose')
 //swagger
 const swaggerUi = require('swagger-ui-express')
 const swaggerFile = require('./swagger_output.json')
-const { Logger } = require('./Logger/Logger')
+const { Logger } = require('./plugins/Logger/Logger')
 app.use('/api-doc', swaggerUi.serve, swaggerUi.setup(swaggerFile))
 
 mongoose.connect(process.env.DB_URL).catch((error) => console.log(error))
