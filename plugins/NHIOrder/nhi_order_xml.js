@@ -38,12 +38,9 @@ router.route('/').get(async (req, res) => {
             },
         ])
 
-        axios
-            .post(process.env.ORDER_XML_API, { schedules })
-            .then((res) => console.log(res.data))
-            .catch((e) => console.log(e))
+        const post_nhi_order_xml = await axios.post(process.env.ORDER_XML_API, { schedules })
 
-        return res.status(200).json(schedules)
+        return res.status(200).json(await post_nhi_order_xml)
     } catch (e) {
         return res.status(500).json({ message: e.message })
     }
