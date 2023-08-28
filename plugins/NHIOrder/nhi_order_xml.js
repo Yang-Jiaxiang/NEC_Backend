@@ -40,7 +40,7 @@ router.route('/').get(async (req, res) => {
 
         const post_nhi_order_xml = await axios.post(process.env.ORDER_XML_API, { schedules })
 
-        return res.status(200).json(await post_nhi_order_xml)
+        return res.status(200).json(post_nhi_order_xml.data)
     } catch (e) {
         return res.status(500).json({ message: e.message })
     }
